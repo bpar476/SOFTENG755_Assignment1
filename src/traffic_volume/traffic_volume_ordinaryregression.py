@@ -9,8 +9,6 @@ ROOT_DIR='../..'
 
 tf_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + '/Traffic_flow/traffic_flow_data.csv')
 
-print(tf_df)
-
 # Partition data into training and test data
 num_rows = tf_df.shape[0]
 training_threshold = math.floor(num_rows/10)
@@ -24,9 +22,6 @@ target = ['Segment23_(t+1)']
 
 training_features = training_set.loc[:, :last_feature]
 training_targets = training_set.loc[:, target]
-
-print(training_features)
-print(training_targets)
 
 testing_features = testing_set.loc[:, :last_feature]
 testing_targets = testing_set.loc[:, target]
