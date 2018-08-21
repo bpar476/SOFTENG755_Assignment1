@@ -6,7 +6,9 @@ import matplotlib.pyplot as plt
 from sklearn import linear_model
 from sklearn.metrics import mean_squared_error, r2_score
 
-wc_df = pd.read_csv(filepath_or_buffer='../World_Cup_2018/2018_worldcup.csv')
+ROOT_DIR='../..'
+
+wc_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + '/World_Cup_2018/2018_worldcup.csv')
 
 # Partition data into training and test data
 num_rows = wc_df.shape[0]
