@@ -72,6 +72,10 @@ testing_scores = goals.to_frame().iloc[num_rows - training_threshold:]
 training_results = results.to_frame().iloc[:num_rows - training_threshold]
 testing_results = results.to_frame().iloc[num_rows - training_threshold:]
 
+print('-------------------------------------------')
+print('--------------REGRESSION TASK--------------')
+print('-------------------------------------------')
+
 # Ordinary regression
 ord_regr = linear_model.LinearRegression()
 ord_regr.fit(training_features, training_scores)
@@ -92,3 +96,22 @@ print('------------PERFORMANCE  OF RIDGE REGRESSION-----------')
 print('Coefficients: ', ridge_regr.coef_)
 print('Mean Squared error: {:.2}'.format(mean_squared_error(testing_scores, ridge_prediction_scores)))
 print('Variance score: {:.2}'.format(r2_score(testing_scores, ridge_prediction_scores)))
+
+print('-------------------------------------------')
+print('------------CLASSIFICATION TASK------------')
+print('-------------------------------------------')
+perceptron = linear_model.Perceptron()
+
+# Train the model
+perceptron.fit(training_features, training_results)
+
+# Make some predictions
+perceptron_prediction_results = perceptron.predict(testing_features)
+
+print(perceptron_prediction_results)
+print(testing_results)
+
+# Evaluate the model
+print('-----------PERFORMANCE OF PERCEPTRON----------')
+print('Coefficients: ', perceptron.coef_)
+print('Mean accuracy of predictions: {:.2f}'.format(perceptron.score(testing_features, testing_results)))
