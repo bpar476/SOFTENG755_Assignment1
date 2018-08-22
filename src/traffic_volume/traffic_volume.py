@@ -36,18 +36,24 @@ testing_features = processed_features.iloc[num_rows - training_threshold:]
 training_targets = targets.iloc[:num_rows - training_threshold]
 testing_targets = targets.iloc[num_rows - training_threshold:]
 
-print(training_features.shape)
-print(training_targets.shape)
+# Ordinary regression
+ord_regr = linear_model.LinearRegression()
+ord_regr.fit(training_features, training_targets)
+ord_prediction_targets = ord_regr.predict(testing_features)
 
-regr = linear_model.LinearRegression()
-
-# Train the model
-regr.fit(training_features, training_targets)
-
-# Make some predictions
-prediction_targets = regr.predict(testing_features)
+# Ridge regression
+ridge_regr = linear_model.RidgeCV(alphas = [0.1, 1.0, 10.0, 100.0])
+ridge_regr.fit(training_features, training_targets)
+ridge_prediction_targets = ridge_regr.predict(testing_features)
 
 # Evaluate the model
-print('Coefficients: ', regr.coef_)
-print('Mean Squared error: {:.2}'.format(mean_squared_error(testing_targets, prediction_targets)))
-print('Variance score: {:.2}'.format(r2_score(testing_targets, prediction_targets)))
+print('------------ORDINARY REGRESSION RESULTS------------')
+print('Coefficients: ', ord_regr.coef_)
+print('Mean Squared error: {:.2}'.format(mean_squared_error(testing_targets, ord_prediction_targets)))
+print('Variance score: {:.2}'.format(r2_score(testing_targets, ord_prediction_targets)))
+
+
+print('-------------RIDGE  REGRESSION RESULTS------------')
+print('Coefficients: ', ridge_regr.coef_)
+print('Mean Squared error: {:.2}'.format(mean_squared_error(testing_targets, ridge_prediction_targets)))
+print('Variance score: {:.2}'.format(r2_score(testing_targets, ridge_prediction_targets)))
