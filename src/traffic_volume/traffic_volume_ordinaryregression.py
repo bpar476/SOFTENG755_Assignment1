@@ -4,27 +4,40 @@ import math
 
 from sklearn import linear_model
 from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.preprocessing import Imputer, StandardScaler
+from sklearn.pipeline import Pipeline
 
 ROOT_DIR='../..'
 
 tf_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + '/Traffic_flow/traffic_flow_data.csv')
 
-# Partition data into training and test data
-num_rows = tf_df.shape[0]
-training_threshold = math.floor(num_rows/10)
-
-training_set = tf_df.iloc[:num_rows - training_threshold]
-testing_set = tf_df.iloc[num_rows - training_threshold:]
-
 # Extract features
 last_feature = 'Segment_45(t)'
 target = ['Segment23_(t+1)']
 
-training_features = training_set.loc[:, :last_feature]
-training_targets = training_set.loc[:, target]
+features = tf_df.loc[:, :last_feature]
+targets = tf_df.loc[:, target]
 
-testing_features = testing_set.loc[:, :last_feature]
-testing_targets = testing_set.loc[:, target]
+# Preprocess features
+pipeline = Pipeline([
+        ('imputer', Imputer(strategy='median')),
+        ('std_scaler', StandardScaler())
+    ])
+processed_features = pd.DataFrame(pipeline.fit_transform(features))
+
+# Partition data into training and test data
+num_rows = processed_features.shape[0]
+training_threshold = math.floor(num_rows/10)
+
+training_features = processed_features.iloc[:num_rows - training_threshold]
+testing_features = processed_features.iloc[num_rows - training_threshold:]
+
+
+training_targets = targets.iloc[:num_rows - training_threshold]
+testing_targets = targets.iloc[num_rows - training_threshold:]
+
+print(training_features.shape)
+print(training_targets.shape)
 
 regr = linear_model.LinearRegression()
 
