@@ -69,5 +69,50 @@ for x in rows_to_drop:
     targets.drop(targets.index[x], inplace=True)
 
 
+
 test_features = pd.DataFrame(test_features_list, columns=processed_features.columns)
 test_targets = pd.Series(test_targets_list)
+
+print('-------------------------------------------')
+print('------------CLASSIFICATION TASK------------')
+print('-------------------------------------------')
+# Perceptron model
+perceptron = linear_model.Perceptron()
+
+# Train the model
+perceptron.fit(processed_features, targets)
+
+# Evaluate the model
+print('-----------PERFORMANCE OF PERCEPTRON----------')
+print('Coefficients: ', perceptron.coef_)
+print('Mean accuracy of predictions: {:.2f}'.format(perceptron.score(test_features, test_targets)))
+
+# SVM model
+svm_clf = svm.SVC(kernel='linear')
+svm_clf.fit(processed_features, targets)
+
+# Evaluate the model
+print('--------------PERFORMANCE OF SVM--------------')
+# print('Coefficients: ', svm_clf.coef_)
+print('Mean accuracy of predictions: {:.2f}'.format(svm_clf.score(test_features, test_targets)))
+
+# Decision Tree Model
+tree_clf = tree.DecisionTreeClassifier()
+tree_clf.fit(processed_features, targets)
+
+print('--------PERFORMANCE OF DECISION TREES---------')
+print('Mean accuracy of predictions: {:.2f}'.format(tree_clf.score(test_features, test_targets)))
+
+# K-Nearest Model
+knear_clf = neighbors.KNeighborsClassifier(n_neighbors=3)
+knear_clf.fit(processed_features, targets)
+
+print('-----PERFORMANCE OF K-NEAREST NEIGHBOURS------')
+print('Mean accuracy of predictions: {:.2f}'.format(knear_clf.score(test_features, test_targets)))
+
+# Naive Bayes Model
+bayes_clf = naive_bayes.GaussianNB()
+bayes_clf.fit(processed_features, targets)
+
+print('-------PERFORMANCE OF NAIVE BAYES--------')
+print('Mean accuracy of predictions: {:.2f}'.format(bayes_clf.score(test_features, test_targets)))
