@@ -3,7 +3,7 @@ import pandas as pd
 import math
 import matplotlib.pyplot as plt
 
-from sklearn import linear_model
+from sklearn import linear_model, svm, tree, neighbors, naive_bayes
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.preprocessing import Imputer, StandardScaler
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -100,6 +100,8 @@ print('Variance score: {:.2}'.format(r2_score(testing_scores, ridge_prediction_s
 print('-------------------------------------------')
 print('------------CLASSIFICATION TASK------------')
 print('-------------------------------------------')
+
+# Perceptron model
 perceptron = linear_model.Perceptron()
 
 # Train the model
@@ -108,10 +110,48 @@ perceptron.fit(training_features, training_results)
 # Make some predictions
 perceptron_prediction_results = perceptron.predict(testing_features)
 
-print(perceptron_prediction_results)
-print(testing_results)
-
 # Evaluate the model
 print('-----------PERFORMANCE OF PERCEPTRON----------')
 print('Coefficients: ', perceptron.coef_)
 print('Mean accuracy of predictions: {:.2f}'.format(perceptron.score(testing_features, testing_results)))
+
+# SVM model
+svm_clf = svm.SVC(kernel='linear')
+svm_clf.fit(training_features, training_results)
+
+svm_prediction = svm_clf.predict(testing_features)
+
+# Evaluate the model
+print('--------------PERFORMANCE OF SVM--------------')
+# print('Coefficients: ', svm_clf.coef_)
+print('Mean accuracy of predictions: {:.2f}'.format(svm_clf.score(testing_features, testing_results)))
+
+# Decision Tree Model
+tree_clf = tree.DecisionTreeClassifier()
+tree_clf.fit(training_features, training_results)
+
+tree_prediction = tree_clf.predict(testing_features)
+
+print('--------PERFORMANCE OF DECISION TREES---------')
+print('Mean accuracy of predictions: {:.2f}'.format(tree_clf.score(testing_features, testing_results)))
+
+# K-Nearest Model
+knear_clf = neighbors.KNeighborsClassifier(n_neighbors=3)
+knear_clf.fit(training_features, training_results)
+
+knear_prediction = knear_clf.predict(testing_features)
+
+print('-----PERFORMANCE OF K-NEAREST NEIGHBOURS------')
+print('Mean accuracy of predictions: {:.2f}'.format(knear_clf.score(testing_features, testing_results)))
+
+# Naive Bayes Model
+bayes_clf = naive_bayes.GaussianNB()
+bayes_clf.fit(training_features, training_results)
+
+bayes_prediction = bayes_clf.predict(testing_features)
+
+print(testing_results)
+print(bayes_prediction)
+
+print('-------PERFORMANCE OF NAIVE BAYES--------')
+print('Mean accuracy of predictions: {:.2f}'.format(bayes_clf.score(testing_features, testing_results)))
