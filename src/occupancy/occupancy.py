@@ -31,6 +31,7 @@ targets = occupancy_df.loc[:, 'Occupancy']
 # Transform the date into a number
 features['date'] = features['date'].apply(date_to_minutes)
 
+# Process the features
 pipeline = Pipeline([
         ('imputer', Imputer(strategy='median')),
         ('std_scaler', StandardScaler())
