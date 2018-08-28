@@ -42,29 +42,37 @@ processed_features = pd.DataFrame(pipeline.fit_transform(features))
 # Partition data into training and test sets
 data_len = processed_features.shape[0]
 
-training_size = min(data_len - math.floor(data_len/10), min(occupancy_df.groupby('Occupancy').size()))
+class_freq = min(data_len - math.floor(data_len/10)/2, math.floor(min(occupancy_df.groupby('Occupancy').size()) * 0.9))
+training_size = data_len - math.floor(data_len/10)
 
 # Get an even distribution of occupied and unoccupied data samples
 num_occupied = 0
 num_unoccupied = 0
-max_unoccupied = math.floor(training_size/2)
-max_occupied = training_size - max_unoccupied
 
 train_features_list = []
 train_targets_list = []
 rows_to_drop = []
 
+total_training_samples = 0;
+
 for i in range(data_len):
-    if targets.iloc[i] == 0 and num_unoccupied < max_unoccupied:
+    if total_training_samples == training_size:
+        break
+
+    if targets.iloc[i] == 0 and num_unoccupied < class_freq:
         train_features_list.append(processed_features.iloc[i].tolist())
         train_targets_list.append(targets.iloc[i])
         rows_to_drop.append(i)
         num_unoccupied += 1
-    elif targets.iloc[i] == 1 and num_occupied < max_occupied:
+        total_training_samples += 1
+    elif targets.iloc[i] == 1 and num_occupied < class_freq:
         train_features_list.append(processed_features.iloc[i].tolist())
         train_targets_list.append(targets.iloc[i])
         rows_to_drop.append(i)
         num_occupied += 1
+        total_training_samples += 1
+
+print('num_unoccupied: {}, num_occupied: {}'.format(num_unoccupied, num_occupied))
 
 for x in rows_to_drop:
     processed_features.drop(x, inplace=True)
