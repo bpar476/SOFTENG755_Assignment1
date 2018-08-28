@@ -67,8 +67,8 @@ for i in range(data_len):
         num_occupied += 1
 
 for x in rows_to_drop:
-    processed_features.drop(processed_features.index[x], inplace=True)
-    targets.drop(targets.index[x], inplace=True)
+    processed_features.drop(x, inplace=True)
+    targets.drop(x, inplace=True)
 
 training_features = pd.DataFrame(train_features_list, columns=processed_features.columns)
 training_targets = pd.Series(train_targets_list)

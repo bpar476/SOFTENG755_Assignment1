@@ -44,8 +44,8 @@ for row in range(rows):
         rows_to_drop.append(row)
 
 for x in rows_to_drop:
-    processed_features.drop(processed_features.index[x], inplace=True)
-    targets.drop(targets.index[x], inplace=True)
+    processed_features.drop(x, inplace=True)
+    targets.drop(x, inplace=True)
 
 test_features = pd.DataFrame(test_features_list)
 test_targets = pd.Series(test_targets_list)
