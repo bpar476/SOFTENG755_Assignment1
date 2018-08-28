@@ -25,8 +25,8 @@ pipeline = Pipeline([
 processed_features = pd.DataFrame(pipeline.fit_transform(features))
 
 # Partition data into training and test sets
-training_size = min(rows - math.floor(rows/10), min(ls_df.groupby(cols-1).size()))
-class_freq = math.floor(training_size/6)
+class_freq = min(math.floor((rows - rows/10)/6), math.floor(min(ls_df.groupby(cols-1).size()) * 0.9))
+training_set_limit = rows - math.floor(rows/10)
 
 # Get an even distribution of each class
 class_counts = {1:0,2:0,3:0,4:0,5:0,7:0}
@@ -35,13 +35,16 @@ train_features_list = []
 train_targets_list = []
 rows_to_drop = []
 
+total_training_samples = 0
+
 for row in range(rows):
     row_class = targets.iloc[row]
-    if class_counts[row_class] < class_freq:
+    if class_counts[row_class] < class_freq and total_training_samples < training_set_limit:
         class_counts[row_class] += 1
         train_features_list.append(processed_features.iloc[row].tolist())
         train_targets_list.append(row_class)
         rows_to_drop.append(row)
+        total_training_samples += 1
 
 for x in rows_to_drop:
     processed_features.drop(x, inplace=True)
