@@ -27,7 +27,7 @@ processed_features = pd.DataFrame(pipeline.fit_transform(features))
 
 # Partition data into training and test data
 num_rows = processed_features.shape[0]
-training_threshold = math.floor(num_rows/10)
+training_threshold = math.ceil(num_rows/10)
 
 training_features = processed_features.iloc[:num_rows - training_threshold]
 testing_features = processed_features.iloc[num_rows - training_threshold:]

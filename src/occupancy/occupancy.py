@@ -42,8 +42,8 @@ processed_features = pd.DataFrame(pipeline.fit_transform(features))
 # Partition data into training and test sets
 data_len = processed_features.shape[0]
 
-class_freq = min(data_len - math.floor(data_len/10)/2, math.floor(min(occupancy_df.groupby('Occupancy').size()) * 0.9))
-training_size = data_len - math.floor(data_len/10)
+class_freq = min(data_len - math.ceil(data_len/10)/2, math.ceil(min(occupancy_df.groupby('Occupancy').size()) * 0.9))
+training_size = data_len - math.ceil(data_len/10)
 
 # Get an even distribution of occupied and unoccupied data samples
 num_occupied = 0
@@ -71,8 +71,6 @@ for i in range(data_len):
         rows_to_drop.append(i)
         num_occupied += 1
         total_training_samples += 1
-
-print('num_unoccupied: {}, num_occupied: {}'.format(num_unoccupied, num_occupied))
 
 for x in rows_to_drop:
     processed_features.drop(x, inplace=True)

@@ -56,11 +56,11 @@ processed_features = pd.DataFrame(data=full_pipeline.fit_transform(features),ind
 
 # Partition data into training and test data
 num_rows = wc_df.shape[0]
-training_threshold_regression = math.floor(num_rows/10)
+training_threshold_regression = math.ceil(num_rows/10)
 
 # Try to create an even distribution of classes (for classification)
-class_freq = min(num_rows - math.floor(num_rows/10)/2, math.floor(min(wc_df.groupby('Match_result').size()) * 0.9))
-training_threshold_classification = num_rows - math.floor(num_rows/10)
+class_freq = min(num_rows - math.ceil(num_rows/10)/2, math.ceil(min(wc_df.groupby('Match_result').size()) * 0.9))
+training_threshold_classification = num_rows - math.ceil(num_rows/10)
 
 # Get an even distribution of each class
 class_counts = {'draw':0,'loss':0,'win':0}
@@ -79,8 +79,6 @@ for row in range(num_rows):
         train_results_list.append(row_class)
         rows_to_drop.append(processed_features.index[row])
         total_training_samples += 1
-
-print(class_counts)
 
 classification_test_features = processed_features.copy()
 classification_test_results = results.copy()
