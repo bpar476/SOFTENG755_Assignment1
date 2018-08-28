@@ -41,27 +41,28 @@ processed_features = pd.DataFrame(pipeline.fit_transform(features))
 
 # Partition data into training and test sets
 data_len = processed_features.shape[0]
-test_size = math.floor(data_len/10)
+
+training_size = min(data_len - math.floor(data_len/10), min(occupancy_df.groupby('Occupancy').size()))
 
 # Get an even distribution of occupied and unoccupied data samples
 num_occupied = 0
-num_unoccupied = 0;
-max_unoccupied = math.floor(test_size/2)
-max_occupied = test_size - max_unoccupied
+num_unoccupied = 0
+max_unoccupied = math.floor(training_size/2)
+max_occupied = training_size - max_unoccupied
 
-test_features_list = []
-test_targets_list = []
+train_features_list = []
+train_targets_list = []
 rows_to_drop = []
 
 for i in range(data_len):
     if targets.iloc[i] == 0 and num_unoccupied < max_unoccupied:
-        test_features_list.append(processed_features.iloc[i].tolist())
-        test_targets_list.append(targets.iloc[i])
+        train_features_list.append(processed_features.iloc[i].tolist())
+        train_targets_list.append(targets.iloc[i])
         rows_to_drop.append(i)
         num_unoccupied += 1
     elif targets.iloc[i] == 1 and num_occupied < max_occupied:
-        test_features_list.append(processed_features.iloc[i].tolist())
-        test_targets_list.append(targets.iloc[i])
+        train_features_list.append(processed_features.iloc[i].tolist())
+        train_targets_list.append(targets.iloc[i])
         rows_to_drop.append(i)
         num_occupied += 1
 
@@ -69,10 +70,8 @@ for x in rows_to_drop:
     processed_features.drop(processed_features.index[x], inplace=True)
     targets.drop(targets.index[x], inplace=True)
 
-
-
-test_features = pd.DataFrame(test_features_list, columns=processed_features.columns)
-test_targets = pd.Series(test_targets_list)
+training_features = pd.DataFrame(train_features_list, columns=processed_features.columns)
+training_targets = pd.Series(train_targets_list)
 
 print('-------------------------------------------')
 print('------------CLASSIFICATION TASK------------')
@@ -81,39 +80,39 @@ print('-------------------------------------------')
 perceptron = linear_model.Perceptron()
 
 # Train the model
-perceptron.fit(processed_features, targets)
+perceptron.fit(training_features, training_targets)
 
 # Evaluate the model
 print('-----------PERFORMANCE OF PERCEPTRON----------')
 print('Coefficients: ', perceptron.coef_)
-print('Mean accuracy of predictions: {:.2f}'.format(perceptron.score(test_features, test_targets)))
+print('Mean accuracy of predictions: {:.2f}'.format(perceptron.score(processed_features, targets)))
 
 # SVM model
 svm_clf = svm.SVC(kernel='linear')
-svm_clf.fit(processed_features, targets)
+svm_clf.fit(training_features, training_targets)
 
 # Evaluate the model
 print('--------------PERFORMANCE OF SVM--------------')
 # print('Coefficients: ', svm_clf.coef_)
-print('Mean accuracy of predictions: {:.2f}'.format(svm_clf.score(test_features, test_targets)))
+print('Mean accuracy of predictions: {:.2f}'.format(svm_clf.score(processed_features, targets)))
 
 # Decision Tree Model
 tree_clf = tree.DecisionTreeClassifier()
-tree_clf.fit(processed_features, targets)
+tree_clf.fit(training_features, training_targets)
 
 print('--------PERFORMANCE OF DECISION TREES---------')
-print('Mean accuracy of predictions: {:.2f}'.format(tree_clf.score(test_features, test_targets)))
+print('Mean accuracy of predictions: {:.2f}'.format(tree_clf.score(processed_features, targets)))
 
 # K-Nearest Model
 knear_clf = neighbors.KNeighborsClassifier(n_neighbors=3)
-knear_clf.fit(processed_features, targets)
+knear_clf.fit(training_features, training_targets)
 
 print('-----PERFORMANCE OF K-NEAREST NEIGHBOURS------')
-print('Mean accuracy of predictions: {:.2f}'.format(knear_clf.score(test_features, test_targets)))
+print('Mean accuracy of predictions: {:.2f}'.format(knear_clf.score(processed_features, targets)))
 
 # Naive Bayes Model
 bayes_clf = naive_bayes.GaussianNB()
-bayes_clf.fit(processed_features, targets)
+bayes_clf.fit(training_features, training_targets)
 
 print('-------PERFORMANCE OF NAIVE BAYES--------')
-print('Mean accuracy of predictions: {:.2f}'.format(bayes_clf.score(test_features, test_targets)))
+print('Mean accuracy of predictions: {:.2f}'.format(bayes_clf.score(processed_features, targets)))
