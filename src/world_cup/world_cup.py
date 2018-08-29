@@ -52,53 +52,25 @@ full_pipeline = FeatureUnion(transformer_list=[
         ('cat_pipeline', category_pipeline)
     ])
 
-processed_features = pd.DataFrame(data=full_pipeline.fit_transform(features),index=np.arange(1,65))
+prepared_features = pd.DataFrame(data=full_pipeline.fit_transform(features),index=np.arange(1,65))
 
 # Partition data into training and test data
 num_rows = wc_df.shape[0]
-training_threshold_regression = math.ceil(num_rows/10)
+training_threshold = math.floor(num_rows/10)
 
-# Try to create an even distribution of classes (for classification)
-class_freq = min(num_rows - math.ceil(num_rows/10)/2, math.ceil(min(wc_df.groupby('Match_result').size()) * 0.9))
-training_threshold_classification = num_rows - math.ceil(num_rows/10)
-
-# Get an even distribution of each class
-class_counts = {'draw':0,'loss':0,'win':0}
-
-train_features_list = []
-train_results_list = []
-rows_to_drop = []
-
-total_training_samples = 0
-
-for row in range(num_rows):
-    row_class = results.iloc[row]
-    if total_training_samples < training_threshold_classification and class_counts[row_class] < class_freq:
-        class_counts[row_class] += 1
-        train_features_list.append(processed_features.iloc[row].tolist())
-        train_results_list.append(row_class)
-        rows_to_drop.append(processed_features.index[row])
-        total_training_samples += 1
-
-classification_test_features = processed_features.copy()
-classification_test_results = results.copy()
-
-for x in rows_to_drop:
-    classification_test_features.drop(x, inplace=True)
-    classification_test_results.drop(x, inplace=True)
-
-training_features_classification = pd.DataFrame(train_features_list, columns=processed_features.columns)
-training_results_classification = pd.Series(train_results_list)
-
-# Create a random partition for regression
+# Prepare inputs for ML algorithms
 
 # Features
-training_features = processed_features.iloc[:num_rows - training_threshold_regression]
-testing_features = processed_features.iloc[num_rows - training_threshold_regression:]
+training_features = prepared_features.iloc[:num_rows - training_threshold]
+testing_features = prepared_features.iloc[num_rows - training_threshold:]
 
 # Scores for regression task
-training_scores = goals.to_frame().iloc[:num_rows - training_threshold_regression]
-testing_scores = goals.to_frame().iloc[num_rows - training_threshold_regression:]
+training_scores = goals.to_frame().iloc[:num_rows - training_threshold]
+testing_scores = goals.to_frame().iloc[num_rows - training_threshold:]
+
+# Results for classification task
+training_results = results.to_frame().iloc[:num_rows - training_threshold]
+testing_results = results.to_frame().iloc[num_rows - training_threshold:]
 
 print('-------------------------------------------')
 print('--------------REGRESSION TASK--------------')
@@ -116,12 +88,10 @@ ridge_prediction_scores = ridge_regr.predict(testing_features)
 
 # Evaluate the models
 print('-----------PERFORMANCE OF ORDINARY REGRESSION----------')
-print('Coefficients: ', ord_regr.coef_)
 print('Mean Squared error: {:.2}'.format(mean_squared_error(testing_scores, ord_prediction_scores)))
 print('Variance score: {:.2}'.format(r2_score(testing_scores, ord_prediction_scores)))
 
 print('------------PERFORMANCE  OF RIDGE REGRESSION-----------')
-print('Coefficients: ', ridge_regr.coef_)
 print('Mean Squared error: {:.2}'.format(mean_squared_error(testing_scores, ridge_prediction_scores)))
 print('Variance score: {:.2}'.format(r2_score(testing_scores, ridge_prediction_scores)))
 
@@ -133,40 +103,48 @@ print('-------------------------------------------')
 perceptron = linear_model.Perceptron()
 
 # Train the model
-perceptron.fit(training_features_classification, training_results_classification)
+perceptron.fit(training_features, training_results)
+
+# Make some predictions
+perceptron_prediction_results = perceptron.predict(testing_features)
 
 # Evaluate the model
 print('-----------PERFORMANCE OF PERCEPTRON----------')
-print('Coefficients: ', perceptron.coef_)
-print(classification_test_features)
-print('Mean accuracy of predictions: {:.2f}'.format(perceptron.score(classification_test_features, classification_test_results)))
+print('Mean accuracy of predictions: {:.2f}'.format(perceptron.score(testing_features, testing_results)))
 
 # SVM model
 svm_clf = svm.SVC(kernel='linear')
-svm_clf.fit(training_features_classification, training_results_classification)
+svm_clf.fit(training_features, training_results)
+
+svm_prediction = svm_clf.predict(testing_features)
 
 # Evaluate the model
 print('--------------PERFORMANCE OF SVM--------------')
-# print('Coefficients: ', svm_clf.coef_)
-print('Mean accuracy of predictions: {:.2f}'.format(svm_clf.score(classification_test_features, classification_test_results)))
+print('Mean accuracy of predictions: {:.2f}'.format(svm_clf.score(testing_features, testing_results)))
 
 # Decision Tree Model
 tree_clf = tree.DecisionTreeClassifier()
-tree_clf.fit(training_features_classification, training_results_classification)
+tree_clf.fit(training_features, training_results)
+
+tree_prediction = tree_clf.predict(testing_features)
 
 print('--------PERFORMANCE OF DECISION TREES---------')
-print('Mean accuracy of predictions: {:.2f}'.format(tree_clf.score(classification_test_features, classification_test_results)))
+print('Mean accuracy of predictions: {:.2f}'.format(tree_clf.score(testing_features, testing_results)))
 
 # K-Nearest Model
 knear_clf = neighbors.KNeighborsClassifier(n_neighbors=3)
-knear_clf.fit(training_features_classification, training_results_classification)
+knear_clf.fit(training_features, training_results.values.ravel())
+
+knear_prediction = knear_clf.predict(testing_features)
 
 print('-----PERFORMANCE OF K-NEAREST NEIGHBOURS------')
-print('Mean accuracy of predictions: {:.2f}'.format(knear_clf.score(classification_test_features, classification_test_results)))
+print('Mean accuracy of predictions: {:.2f}'.format(knear_clf.score(testing_features, testing_results)))
 
 # Naive Bayes Model
 bayes_clf = naive_bayes.GaussianNB()
-bayes_clf.fit(training_features_classification, training_results_classification)
+bayes_clf.fit(training_features, training_results)
+
+bayes_prediction = bayes_clf.predict(testing_features)
 
 print('-------PERFORMANCE OF NAIVE BAYES--------')
-print('Mean accuracy of predictions: {:.2f}'.format(bayes_clf.score(classification_test_features, classification_test_results)))
+print('Mean accuracy of predictions: {:.2f}'.format(bayes_clf.score(testing_features, testing_results)))
