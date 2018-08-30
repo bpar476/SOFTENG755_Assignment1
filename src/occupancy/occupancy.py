@@ -7,6 +7,7 @@ import re
 from sklearn import linear_model, svm, tree, neighbors, naive_bayes
 from sklearn.preprocessing import Imputer, StandardScaler
 from sklearn.pipeline import Pipeline
+from sklearn.metrics import f1_score, roc_auc_score
 
 '''
     Used to transform the date into a number. We ignore the date, and only
@@ -82,43 +83,60 @@ training_targets = pd.Series(train_targets_list)
 print('-------------------------------------------')
 print('------------CLASSIFICATION TASK------------')
 print('-------------------------------------------')
+
+print('F1 scores given in numeric order: 0 (unoccupied), 1 (occupied)')
 # Perceptron model
 perceptron = linear_model.Perceptron()
 
 # Train the model
 perceptron.fit(training_features, training_targets)
 
+perceptron_prediction = perceptron.predict(processed_features)
+
 # Evaluate the model
 print('-----------PERFORMANCE OF PERCEPTRON----------')
-print('Coefficients: ', perceptron.coef_)
 print('Mean accuracy of predictions: {:.2f}'.format(perceptron.score(processed_features, targets)))
+print('f1 score of perceptron: {}'.format(f1_score(targets, perceptron_prediction, average=None)))
+print('Area under ROC curve score: {}'.format(roc_auc_score(targets, perceptron.decision_function(processed_features))))
 
 # SVM model
 svm_clf = svm.SVC(kernel='linear')
 svm_clf.fit(training_features, training_targets)
 
+svm_prediction = svm_clf.predict(processed_features)
+
 # Evaluate the model
 print('--------------PERFORMANCE OF SVM--------------')
-# print('Coefficients: ', svm_clf.coef_)
 print('Mean accuracy of predictions: {:.2f}'.format(svm_clf.score(processed_features, targets)))
+print('f1 score of svm: {}'.format(f1_score(targets, svm_prediction, average=None)))
+print('Area under ROC curve score: {}'.format(roc_auc_score(targets, svm_clf.decision_function(processed_features))))
 
 # Decision Tree Model
 tree_clf = tree.DecisionTreeClassifier()
 tree_clf.fit(training_features, training_targets)
 
+tree_prediction = tree_clf.predict(processed_features)
+
 print('--------PERFORMANCE OF DECISION TREES---------')
 print('Mean accuracy of predictions: {:.2f}'.format(tree_clf.score(processed_features, targets)))
+print('f1 score of decision trees: {}'.format(f1_score(targets, tree_prediction, average=None)))
 
 # K-Nearest Model
 knear_clf = neighbors.KNeighborsClassifier(n_neighbors=3)
 knear_clf.fit(training_features, training_targets)
 
+knear_prediction = knear_clf.predict(processed_features)
+
 print('-----PERFORMANCE OF K-NEAREST NEIGHBOURS------')
 print('Mean accuracy of predictions: {:.2f}'.format(knear_clf.score(processed_features, targets)))
+print('f1 score of nearest neighbours: {}'.format(f1_score(targets, knear_prediction, average=None)))
 
 # Naive Bayes Model
 bayes_clf = naive_bayes.GaussianNB()
 bayes_clf.fit(training_features, training_targets)
 
+bayes_prediction = bayes_clf.predict(processed_features)
+
 print('-------PERFORMANCE OF NAIVE BAYES--------')
 print('Mean accuracy of predictions: {:.2f}'.format(bayes_clf.score(processed_features, targets)))
+print('f1 score of naive bayes: {}'.format(f1_score(targets, bayes_prediction, average=None)))
