@@ -39,7 +39,7 @@ def preprocess_features(features_to_process, test_set=False):
 
     category_pipeline = Pipeline([
             ('selector', DataFrameSelector(list(categorical_features))),
-            ('cat_encoder', cs.OneHotEncoder(drop_invariant=True))
+            ('cat_encoder', cs.HashingEncoder(drop_invariant=True))
         ])
 
     full_pipeline = FeatureUnion(transformer_list=[
