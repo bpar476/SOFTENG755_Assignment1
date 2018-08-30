@@ -152,7 +152,7 @@ print('f1 score of perceptron: {}'.format(f1_score(testing_results, perceptron_p
 svm_parameters = [{'C': [1, 10, 100, 1000], 'gamma': [1e-3, 1e-4, 1e-5], 'kernel': ['rbf'], 'class_weight':['balanced', None]},
     {'C': [1, 10, 100, 1000], 'kernel': ['linear'], 'class_weight': ['balanced', None]}]
 
-svm_clf = GridSearchCV(svm.SVC(), svm_parameters, cv=5, scoring='f1_weighted')
+svm_clf = GridSearchCV(svm.SVC(), svm_parameters, cv=10, scoring='f1_weighted')
 svm_clf.fit(training_features, training_results)
 
 
@@ -166,7 +166,7 @@ print('f1 score of svm: {}'.format(f1_score(testing_results, svm_prediction, ave
 
 # Decision Tree Model
 tree_parameters = {'criterion': ['entropy', 'gini'], 'max_depth': [None, 3, 8, 12], 'min_samples_leaf': list(range(1,9))}
-tree_clf = RandomizedSearchCV(tree.DecisionTreeClassifier(), tree_parameters, cv=5, scoring='f1_weighted')
+tree_clf = RandomizedSearchCV(tree.DecisionTreeClassifier(), tree_parameters, cv=10, scoring='f1_weighted')
 tree_clf.fit(training_features, training_results)
 
 
@@ -179,7 +179,7 @@ print('f1 score of decision trees: {}'.format(f1_score(testing_results, tree_pre
 
 # K-Nearest Model
 knear_params = {'n_neighbors': [3,5,10, 15], 'weights': ['uniform', 'distance']}
-knear_clf = GridSearchCV(neighbors.KNeighborsClassifier(), knear_params, cv=5, scoring='f1_weighted')
+knear_clf = GridSearchCV(neighbors.KNeighborsClassifier(), knear_params, cv=10, scoring='f1_weighted')
 knear_clf.fit(training_features, training_results)
 
 knear_prediction = knear_clf.predict(testing_features)
