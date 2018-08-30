@@ -9,6 +9,8 @@ from sklearn.preprocessing import Imputer, StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import f1_score, roc_auc_score
 
+ROOT_DIR='../..'
+
 '''
     Used to transform the date into a number. We ignore the date, and only
     take the time. We can't figure out the day of the week so the actual
@@ -20,8 +22,19 @@ def date_to_minutes(time_string):
     minutes = int(match.group(2))
     return 60 * hours + minutes
 
+def preprocess_features(features):
+    # Transform the date into a number
+    features['date'] = features['date'].apply(date_to_minutes)
 
-ROOT_DIR='../..'
+    # Process the features
+    pipeline = Pipeline([
+            ('imputer', Imputer(strategy='median')),
+            ('std_scaler', StandardScaler())
+        ])
+
+    processed_features = pd.DataFrame(pipeline.fit_transform(features))
+
+    return processed_features
 
 occupancy_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + '/Occupancy_sensor/occupancy_sensor_data.csv')
 
@@ -29,16 +42,7 @@ occupancy_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + '/Occupancy_sensor/occu
 features = occupancy_df.loc[:, :'HumidityRatio']
 targets = occupancy_df.loc[:, 'Occupancy']
 
-# Transform the date into a number
-features['date'] = features['date'].apply(date_to_minutes)
-
-# Process the features
-pipeline = Pipeline([
-        ('imputer', Imputer(strategy='median')),
-        ('std_scaler', StandardScaler())
-    ])
-
-processed_features = pd.DataFrame(pipeline.fit_transform(features))
+processed_features = preprocess_features(features)
 
 # Partition data into training and test sets
 data_len = processed_features.shape[0]

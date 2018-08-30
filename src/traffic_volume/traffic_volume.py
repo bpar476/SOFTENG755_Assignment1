@@ -9,6 +9,16 @@ from sklearn.pipeline import Pipeline
 
 ROOT_DIR='../..'
 
+def preprocess_features(features):
+    # Preprocess features
+    pipeline = Pipeline([
+            ('imputer', Imputer(strategy='median')),
+            ('std_scaler', StandardScaler())
+        ])
+    processed_features = pd.DataFrame(pipeline.fit_transform(features))
+
+    return processed_features
+
 tf_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + '/Traffic_flow/traffic_flow_data.csv')
 
 # Extract features
@@ -18,12 +28,7 @@ target = ['Segment23_(t+1)']
 features = tf_df.loc[:, :last_feature]
 targets = tf_df.loc[:, target]
 
-# Preprocess features
-pipeline = Pipeline([
-        ('imputer', Imputer(strategy='median')),
-        ('std_scaler', StandardScaler())
-    ])
-processed_features = pd.DataFrame(pipeline.fit_transform(features))
+processed_features = preprocess_features(features)
 
 # Partition data into training and test data
 num_rows = processed_features.shape[0]

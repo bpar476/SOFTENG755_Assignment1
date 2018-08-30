@@ -10,19 +10,34 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline, FeatureUnion
 import category_encoders as cs
 
-ROOT_DIR='../..'
+def pre_process_features(features_to_process):
+    features.drop(['Date', 'Team1_Ball_Possession(%)'],axis=1,inplace=True)
 
-wc_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + '/World_Cup_2018/2018_worldcup.csv', index_col=0)
-wc_df.drop(['Date', 'Team1_Ball_Possession(%)'],axis=1,inplace=True)
+    # Separate categorical columns from numerical columns
+    categorical_features_list = ['Location', 'Phase', 'Team1', 'Team2', 'Team1_Continent', 'Team2_Continent', 'Normal_Time']
+    numerical_features = features_to_process.drop(categorical_features_list, axis=1, inplace=False)
+    categorical_features = features_to_process[categorical_features_list].copy()
 
-# Extract features
+    numerical_pipeline = Pipeline([
+            ('selector', DataFrameSelector(list(numerical_features))),
+            ('imputer', Imputer(strategy='median')),
+            ('std_scaler', StandardScaler())
+        ])
 
-features = wc_df.loc[:, :'Normal_Time'].copy()
-goals = wc_df.loc[:, 'Total_Scores']
-results = wc_df.loc[:, 'Match_result']
+    category_pipeline = Pipeline([
+            ('selector', DataFrameSelector(list(categorical_features))),
+            ('cat_encoder', cs.OneHotEncoder(drop_invariant=True))
+        ])
 
-# Transform the data to normalise it
-# Create a selector class to select categorical or numerical columns
+    full_pipeline = FeatureUnion(transformer_list=[
+            ('num_pipeline', numerical_pipeline),
+            ('cat_pipeline', category_pipeline)
+        ])
+
+    prepared_features = pd.DataFrame(data=full_pipeline.fit_transform(features_to_process),index=np.arange(1,65))
+
+    return prepared_features
+
 class DataFrameSelector(BaseEstimator, TransformerMixin):
     def __init__(self, attribute_names):
         self.attribute_names = attribute_names
@@ -31,28 +46,15 @@ class DataFrameSelector(BaseEstimator, TransformerMixin):
     def transform(self, X):
         return X[self.attribute_names].values
 
-# Separate categorical columns from numerical columns
-categorical_features_list = ['Location', 'Phase', 'Team1', 'Team2', 'Team1_Continent', 'Team2_Continent', 'Normal_Time']
-numerical_features = features.drop(categorical_features_list, axis=1, inplace=False)
-categorical_features = features[categorical_features_list].copy()
+ROOT_DIR='../..'
 
-numerical_pipeline = Pipeline([
-        ('selector', DataFrameSelector(list(numerical_features))),
-        ('imputer', Imputer(strategy='median')),
-        ('std_scaler', StandardScaler())
-    ])
+wc_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + '/World_Cup_2018/2018_worldcup.csv', index_col=0)
 
-category_pipeline = Pipeline([
-        ('selector', DataFrameSelector(list(categorical_features))),
-        ('cat_encoder', cs.OneHotEncoder(drop_invariant=True))
-    ])
+features = wc_df.loc[:, :'Normal_Time'].copy()
+goals = wc_df.loc[:, 'Total_Scores']
+results = wc_df.loc[:, 'Match_result']
 
-full_pipeline = FeatureUnion(transformer_list=[
-        ('num_pipeline', numerical_pipeline),
-        ('cat_pipeline', category_pipeline)
-    ])
-
-prepared_features = pd.DataFrame(data=full_pipeline.fit_transform(features),index=np.arange(1,65))
+prepared_features = pre_process_features(features)
 
 # Partition data into training and test data
 num_rows = wc_df.shape[0]

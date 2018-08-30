@@ -10,6 +10,17 @@ from sklearn.metrics import f1_score
 
 ROOT_DIR='../..'
 
+def preprocess_features(features):
+    # Pre-process the features
+    pipeline = Pipeline([
+            ('imputer', Imputer(strategy='median')),
+            ('std_scaler', StandardScaler())
+        ])
+
+    processed_features = pd.DataFrame(pipeline.fit_transform(features))
+
+    return processed_features
+
 ls_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + '/Landsat/lantsat.csv', header=None)
 
 rows, cols = ls_df.shape
@@ -17,17 +28,13 @@ rows, cols = ls_df.shape
 features = ls_df.iloc[:, :cols-1]
 targets = ls_df.iloc[:, cols-1]
 
+processed_features = preprocess_features(features)
+
 le = LabelEncoder()
 le.fit(targets)
 targets = le.transform(targets)
 
-# Pre-process the features
-pipeline = Pipeline([
-        ('imputer', Imputer(strategy='median')),
-        ('std_scaler', StandardScaler())
-    ])
-
-processed_features = pd.DataFrame(pipeline.fit_transform(features))
+print('Encoding classes 1,2,3,4,5,7 as {}'.format(le.transform([1,2,3,4,5,7])))
 
 # Partition data into training and test sets
 class_freq = min(math.floor((rows - rows/10)/6), math.floor(min(ls_df.groupby(cols-1).size()) * 0.9))
