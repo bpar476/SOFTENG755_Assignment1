@@ -3,11 +3,19 @@ import pandas as pd
 import math
 import matplotlib.pyplot as plt
 import re
+import argparse
 
 from sklearn import linear_model, svm, tree, neighbors, naive_bayes
 from sklearn.preprocessing import Imputer, StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import f1_score, roc_auc_score
+
+parser = argparse.ArgumentParser(description='Machine learning algorithm for 2018 world cup data.')
+parser.add_argument('-t', '--test-data', help='path to additional features to test against. Path must be relative to the current directory. If supplied, results of predictions against this test data will be the last thing printed by this script (optional)')
+
+parsed_args = parser.parse_args()
+
+TEST_FILE_PATH = parsed_args.test_data
 
 ROOT_DIR='../..'
 FILE_PATH_FROM_ROOT='/Occupancy_sensor/occupancy_sensor_data.csv'
@@ -146,3 +154,36 @@ bayes_prediction = bayes_clf.predict(processed_features)
 print('-------PERFORMANCE OF NAIVE BAYES--------')
 print('Mean accuracy of predictions: {:.2f}'.format(bayes_clf.score(processed_features, targets)))
 print('f1 score of naive bayes: {}'.format(f1_score(targets, bayes_prediction, average=None)))
+
+if TEST_FILE_PATH is not None:
+    print('Running predictions against supplied test data')
+
+    test_data_df = pd.read_csv(filepath_or_buffer=TEST_FILE_PATH)
+    processed_test_data = preprocess_features(test_data_df)
+
+    perceptron_prediction = perceptron.predict(processed_test_data)
+    svm_prediction = svm_clf.predict(processed_test_data)
+    tree_prediction = tree_clf.predict(processed_test_data)
+    knear_prediction = knear_clf.predict(processed_test_data)
+    bayes_prediction = bayes_clf.predict(processed_test_data)
+
+    with open('perceptron_prediction.txt', 'w') as perceptron_out:
+        for pred in perceptron_prediction:
+            perceptron_out.write('{}\n'.format(pred))
+
+    with open('svm_prediction.txt', 'w') as svm_out:
+        for pred in svm_prediction:
+            svm_out.write('{}\n'.format(pred))
+
+    with open('tree_prediction.txt', 'w') as tree_out:
+        for pred in tree_prediction:
+            tree_out.write('{}\n'.format(pred))
+
+    with open('knear_prediction.txt', 'w') as knear_out:
+        for pred in knear_prediction:
+            knear_out.write('{}\n'.format(pred))
+
+    with open('bayes_prediction.txt', 'w') as bayes_out:
+        for pred in bayes_prediction:
+            bayes_out.write('{}\n'.format(pred))
+
