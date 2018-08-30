@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import math
 import matplotlib.pyplot as plt
+import argparse
 
 from sklearn import linear_model, svm, tree, neighbors, naive_bayes
 from sklearn.metrics import mean_squared_error, r2_score, f1_score
@@ -10,10 +11,17 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline, FeatureUnion
 import category_encoders as cs
 
+parser = argparse.ArgumentParser(description='Machine learning algorithm for 2018 world cup data.')
+parser.add_argument('-t', '--test-data', help='path to additional features to test against. Path must be relative to the current directory. If supplied, results of predictions against this test data will be the last thing printed by this script (optional)')
+
+parsed_args = parser.parse_args()
+
+TEST_FILE_PATH = parsed_args.test_data
+
 ROOT_DIR='../..'
 FILE_PATH_FROM_ROOT='/World_Cup_2018/2018_worldcup.csv'
 
-def pre_process_features(features_to_process):
+def preprocess_features(features_to_process, test_set=False):
     # Drop unimportant columns
     features.drop(['Date', 'Team1_Ball_Possession(%)'],axis=1,inplace=True)
 
@@ -39,7 +47,7 @@ def pre_process_features(features_to_process):
             ('cat_pipeline', category_pipeline)
         ])
 
-    prepared_features = pd.DataFrame(data=full_pipeline.fit_transform(features_to_process),index=np.arange(1,65))
+    prepared_features = pd.DataFrame(data=full_pipeline.fit_transform(features_to_process),index=np.arange(1,features_to_process.shape[0]+1))
 
     return prepared_features
 
@@ -52,13 +60,14 @@ class DataFrameSelector(BaseEstimator, TransformerMixin):
         return X[self.attribute_names].values
 
 
+
 wc_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + FILE_PATH_FROM_ROOT, index_col=0)
 
 features = wc_df.loc[:, :'Normal_Time'].copy()
 goals = wc_df.loc[:, 'Total_Scores']
 results = wc_df.loc[:, 'Match_result']
 
-prepared_features = pre_process_features(features)
+prepared_features = preprocess_features(features)
 
 # Partition data into training and test data
 num_rows = wc_df.shape[0]
@@ -78,7 +87,6 @@ testing_scores = goals.to_frame().iloc[num_rows - training_threshold:]
 le = LabelEncoder()
 le.fit(results)
 results = le.transform(results)
-print(le.inverse_transform([0,1,2]))
 
 training_results = results[:num_rows - training_threshold]
 testing_results = results[num_rows - training_threshold:]
@@ -166,3 +174,16 @@ bayes_prediction = bayes_clf.predict(testing_features)
 print('-------PERFORMANCE OF NAIVE BAYES--------')
 print('Mean accuracy of predictions: {:.2f}'.format(bayes_clf.score(testing_features, testing_results)))
 print('f1 score of naive bayes: {}'.format(f1_score(testing_results, bayes_prediction, average=None)))
+
+if TEST_FILE_PATH is not None:
+    print('Running predictions against supplied test data')
+
+    test_data_df = pd.read_csv(filepath_or_buffer=TEST_FILE_PATH, index_col=0)
+    features = test_data_df.loc[:, :'Normal_Time'].copy()
+    processed_test_data = preprocess_features(features)
+
+    test_prediction = perceptron.predict(processed_test_data)
+
+    with open('perceptron_prediction.txt', 'w') as perceptron_out:
+        for pred in test_prediction:
+            perceptron_out.write('{}\n'.format(pred))
