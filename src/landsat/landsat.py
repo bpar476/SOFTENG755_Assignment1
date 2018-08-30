@@ -9,6 +9,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.metrics import f1_score
 
 ROOT_DIR='../..'
+FILE_PATH_FROM_ROOT='/Landsat/lantsat.csv'
 
 def preprocess_features(features):
     # Pre-process the features
@@ -21,7 +22,7 @@ def preprocess_features(features):
 
     return processed_features
 
-ls_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + '/Landsat/lantsat.csv', header=None)
+ls_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + FILE_PATH_FROM_ROOT, header=None)
 
 rows, cols = ls_df.shape
 

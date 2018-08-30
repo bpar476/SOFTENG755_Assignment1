@@ -10,6 +10,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.metrics import f1_score, roc_auc_score
 
 ROOT_DIR='../..'
+FILE_PATH_FROM_ROOT='/Occupancy_sensor/occupancy_sensor_data.csv'
 
 '''
     Used to transform the date into a number. We ignore the date, and only
@@ -37,7 +38,7 @@ def preprocess_features(features):
 
     return processed_features
 
-occupancy_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + '/Occupancy_sensor/occupancy_sensor_data.csv')
+occupancy_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + FILE_PATH_FROM_ROOT)
 
 # Extract Features
 features = occupancy_df.loc[:, :'Occupancy']

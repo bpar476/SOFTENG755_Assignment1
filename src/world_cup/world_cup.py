@@ -10,7 +10,11 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline, FeatureUnion
 import category_encoders as cs
 
+ROOT_DIR='../..'
+FILE_PATH_FROM_ROOT='/World_Cup_2018/2018_worldcup.csv'
+
 def pre_process_features(features_to_process):
+    # Drop unimportant columns
     features.drop(['Date', 'Team1_Ball_Possession(%)'],axis=1,inplace=True)
 
     # Separate categorical columns from numerical columns
@@ -18,6 +22,7 @@ def pre_process_features(features_to_process):
     numerical_features = features_to_process.drop(categorical_features_list, axis=1, inplace=False)
     categorical_features = features_to_process[categorical_features_list].copy()
 
+    # Preprocess features
     numerical_pipeline = Pipeline([
             ('selector', DataFrameSelector(list(numerical_features))),
             ('imputer', Imputer(strategy='median')),
@@ -46,9 +51,8 @@ class DataFrameSelector(BaseEstimator, TransformerMixin):
     def transform(self, X):
         return X[self.attribute_names].values
 
-ROOT_DIR='../..'
 
-wc_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + '/World_Cup_2018/2018_worldcup.csv', index_col=0)
+wc_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + FILE_PATH_FROM_ROOT, index_col=0)
 
 features = wc_df.loc[:, :'Normal_Time'].copy()
 goals = wc_df.loc[:, 'Total_Scores']

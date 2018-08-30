@@ -8,6 +8,7 @@ from sklearn.preprocessing import Imputer, StandardScaler
 from sklearn.pipeline import Pipeline
 
 ROOT_DIR='../..'
+FILE_PATH_FROM_ROOT='/Traffic_flow/traffic_flow_data.csv'
 
 def preprocess_features(features):
     # Preprocess features
@@ -19,7 +20,7 @@ def preprocess_features(features):
 
     return processed_features
 
-tf_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + '/Traffic_flow/traffic_flow_data.csv')
+tf_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + FILE_PATH_FROM_ROOT)
 
 # Extract features
 last_feature = 'Segment_45(t)'
