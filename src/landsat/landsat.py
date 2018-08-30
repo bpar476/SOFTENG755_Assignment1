@@ -2,11 +2,19 @@ import numpy as np
 import pandas as pd
 import math
 import matplotlib.pyplot as plt
+import argparse
 
 from sklearn import linear_model, svm, tree, neighbors, naive_bayes
 from sklearn.preprocessing import Imputer, StandardScaler, LabelEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import f1_score
+
+parser = argparse.ArgumentParser(description='Machine learning algorithm for 2018 world cup data.')
+parser.add_argument('-t', '--test-data', help='path to additional features to test against. Path must be relative to the current directory. If supplied, results of predictions against this test data will be the last thing printed by this script (optional)')
+
+parsed_args = parser.parse_args()
+
+TEST_FILE_PATH = parsed_args.test_data
 
 ROOT_DIR='../..'
 FILE_PATH_FROM_ROOT='/Landsat/lantsat.csv'
@@ -34,8 +42,6 @@ processed_features = preprocess_features(features)
 le = LabelEncoder()
 le.fit(targets)
 targets = le.transform(targets)
-
-print('Encoding classes 1,2,3,4,5,7 as {}'.format(le.transform([1,2,3,4,5,7])))
 
 # Partition data into training and test sets
 class_freq = min(math.floor((rows - rows/10)/6), math.floor(min(ls_df.groupby(cols-1).size()) * 0.9))
@@ -73,7 +79,6 @@ for i in range(len(targets)):
 train_features = pd.DataFrame(train_features_list)
 train_targets = pd.Series(train_targets_list)
 test_targets = pd.Series(test_targets)
-print(test_targets)
 
 print('-------------------------------------------')
 print('------------CLASSIFICATION TASK------------')
@@ -132,3 +137,38 @@ bayes_prediction = bayes_clf.predict(processed_features)
 print('-------PERFORMANCE OF NAIVE BAYES--------')
 print('Mean accuracy of predictions (naive bayes): {:.2f}'.format(bayes_clf.score(processed_features, test_targets)))
 print('f1 score of naive bayes: {}'.format(f1_score(test_targets, bayes_prediction, average=None)))
+
+if TEST_FILE_PATH is not None:
+    print('Running predictions against supplied test data')
+
+    test_data_df = pd.read_csv(filepath_or_buffer=TEST_FILE_PATH, header=None)
+    test_data = test_data_df.iloc[:, :cols-2]
+
+    processed_test_data = preprocess_features(test_data)
+
+    perceptron_prediction = perceptron.predict(processed_test_data)
+    svm_prediction = svm_clf.predict(processed_test_data)
+    tree_prediction = tree_clf.predict(processed_test_data)
+    knear_prediction = knear_clf.predict(processed_test_data)
+    bayes_prediction = bayes_clf.predict(processed_test_data)
+
+    with open('perceptron_prediction.txt', 'w') as perceptron_out:
+        for pred in perceptron_prediction:
+            perceptron_out.write('{}\n'.format(pred))
+
+    with open('svm_prediction.txt', 'w') as svm_out:
+        for pred in svm_prediction:
+            svm_out.write('{}\n'.format(pred))
+
+    with open('tree_prediction.txt', 'w') as tree_out:
+        for pred in tree_prediction:
+            tree_out.write('{}\n'.format(pred))
+
+    with open('knear_prediction.txt', 'w') as knear_out:
+        for pred in knear_prediction:
+            knear_out.write('{}\n'.format(pred))
+
+    with open('bayes_prediction.txt', 'w') as bayes_out:
+        for pred in bayes_prediction:
+            bayes_out.write('{}\n'.format(pred))
+
