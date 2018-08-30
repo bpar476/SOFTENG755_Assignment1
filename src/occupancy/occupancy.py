@@ -24,6 +24,7 @@ def date_to_minutes(time_string):
 
 def preprocess_features(features):
     # Transform the date into a number
+    features = features.loc[:, :'HumidityRatio']
     features['date'] = features['date'].apply(date_to_minutes)
 
     # Process the features
@@ -39,7 +40,7 @@ def preprocess_features(features):
 occupancy_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + '/Occupancy_sensor/occupancy_sensor_data.csv')
 
 # Extract Features
-features = occupancy_df.loc[:, :'HumidityRatio']
+features = occupancy_df.loc[:, :'Occupancy']
 targets = occupancy_df.loc[:, 'Occupancy']
 
 processed_features = preprocess_features(features)

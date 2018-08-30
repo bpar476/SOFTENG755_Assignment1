@@ -25,7 +25,7 @@ ls_df = pd.read_csv(filepath_or_buffer=ROOT_DIR + '/Landsat/lantsat.csv', header
 
 rows, cols = ls_df.shape
 
-features = ls_df.iloc[:, :cols-1]
+features = ls_df.iloc[:, :cols-2]
 targets = ls_df.iloc[:, cols-1]
 
 processed_features = preprocess_features(features)
