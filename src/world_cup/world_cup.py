@@ -182,8 +182,29 @@ if TEST_FILE_PATH is not None:
     features = test_data_df.loc[:, :'Normal_Time'].copy()
     processed_test_data = preprocess_features(features)
 
-    test_prediction = perceptron.predict(processed_test_data)
+    perceptron_prediction = perceptron.predict(processed_test_data)
+    svm_prediction = svm_clf.predict(processed_test_data)
+    tree_prediction = tree_clf.predict(processed_test_data)
+    knear_prediction = knear_clf.predict(processed_test_data)
+    bayes_prediction = bayes_clf.predict(processed_test_data)
 
     with open('perceptron_prediction.txt', 'w') as perceptron_out:
-        for pred in test_prediction:
+        for pred in perceptron_prediction:
             perceptron_out.write('{}\n'.format(pred))
+
+    with open('svm_prediction.txt', 'w') as svm_out:
+        for pred in svm_prediction:
+            svm_out.write('{}\n'.format(pred))
+
+    with open('tree_prediction.txt', 'w') as tree_out:
+        for pred in tree_prediction:
+            tree_out.write('{}\n'.format(pred))
+
+    with open('knear_prediction.txt', 'w') as knear_out:
+        for pred in knear_prediction:
+            knear_out.write('{}\n'.format(pred))
+
+    with open('bayes_prediction.txt', 'w') as bayes_out:
+        for pred in bayes_prediction:
+            bayes_out.write('{}\n'.format(pred))
+
