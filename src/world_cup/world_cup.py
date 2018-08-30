@@ -13,6 +13,7 @@ import category_encoders as cs
 
 parser = argparse.ArgumentParser(description='Machine learning algorithm for 2018 world cup data.')
 parser.add_argument('-t', '--test-data', help='path to additional features to test against. Path must be relative to the current directory. If supplied, results of predictions against this test data will be the last thing printed by this script (optional)')
+parser.add_argument('-d', '--different-values', help='use this flag if the number values of categorical columns in the evaluation dataset is different to the number in the learning dataset', action='store_const', default=False, const=True)
 
 parsed_args = parser.parse_args()
 
@@ -25,10 +26,12 @@ def preprocess_features(features_to_process, test_set=False):
     # Drop unimportant columns
     features.drop(['Date', 'Team1_Ball_Possession(%)'],axis=1,inplace=True)
 
+
     # Separate categorical columns from numerical columns
     categorical_features_list = ['Location', 'Phase', 'Team1', 'Team2', 'Team1_Continent', 'Team2_Continent', 'Normal_Time']
     numerical_features = features_to_process.drop(categorical_features_list, axis=1, inplace=False)
     categorical_features = features_to_process[categorical_features_list].copy()
+
 
     # Preprocess features
     numerical_pipeline = Pipeline([
@@ -39,13 +42,18 @@ def preprocess_features(features_to_process, test_set=False):
 
     category_pipeline = Pipeline([
             ('selector', DataFrameSelector(list(categorical_features))),
-            ('cat_encoder', cs.HashingEncoder(drop_invariant=True))
+            ('cat_encoder', cs.OneHotEncoder(drop_invariant=True))
         ])
 
-    full_pipeline = FeatureUnion(transformer_list=[
-            ('num_pipeline', numerical_pipeline),
-            ('cat_pipeline', category_pipeline)
-        ])
+    if parsed_args.different_values:
+        full_pipeline = FeatureUnion(transformer_list=[
+                ('num_pipeline', numerical_pipeline),
+            ])
+    else:
+        full_pipeline = FeatureUnion(transformer_list=[
+                ('num_pipeline', numerical_pipeline),
+                ('cat_pipeline', category_pipeline)
+            ])
 
     prepared_features = pd.DataFrame(data=full_pipeline.fit_transform(features_to_process),index=np.arange(1,features_to_process.shape[0]+1))
 
