@@ -3,12 +3,14 @@ import pandas as pd
 import math
 import matplotlib.pyplot as plt
 import argparse
+import scipy
 
 from sklearn import linear_model, svm, tree, neighbors, naive_bayes
 from sklearn.metrics import mean_squared_error, r2_score, f1_score
 from sklearn.preprocessing import Imputer, StandardScaler, LabelEncoder
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 import category_encoders as cs
 
 parser = argparse.ArgumentParser(description='Machine learning algorithm for 2018 world cup data.')
@@ -129,47 +131,61 @@ print('-------------------------------------------')
 print('F1 scores given in alphabetic order: draw loss win')
 
 # Perceptron model
-perceptron = linear_model.Perceptron()
+perceptron_parameters = {'max_iter': [5, 10, 20], 'penalty': ['elasticnet', None], 'alpha': [1e-3, 1e-4, 1e-5]}
+perceptron = GridSearchCV(linear_model.Perceptron(), perceptron_parameters, cv=5, scoring='f1_weighted')
+
 
 # Train the model
 perceptron.fit(training_features, training_results)
+
 
 # Make some predictions
 perceptron_prediction_results = perceptron.predict(testing_features)
 
 # Evaluate the model
-print('-----------PERFORMANCE OF PERCEPTRON----------')
+print('-----------PERCEPTRON----------')
+print('Tuned perceptron parameters: {}'.format(perceptron.best_params_))
 print('Mean accuracy of predictions: {:.2f}'.format(perceptron.score(testing_features, testing_results)))
 print('f1 score of perceptron: {}'.format(f1_score(testing_results, perceptron_prediction_results, average=None)))
 
 # SVM model
-svm_clf = svm.SVC(kernel='linear')
+svm_parameters = [{'C': [1, 10, 100, 1000], 'gamma': [1e-3, 1e-4, 1e-5], 'kernel': ['rbf'], 'class_weight':['balanced', None]},
+    {'C': [1, 10, 100, 1000], 'kernel': ['linear'], 'class_weight': ['balanced', None]}]
+
+svm_clf = GridSearchCV(svm.SVC(), svm_parameters, cv=5, scoring='f1_weighted')
 svm_clf.fit(training_features, training_results)
+
 
 svm_prediction = svm_clf.predict(testing_features)
 
 # Evaluate the model
-print('--------------PERFORMANCE OF SVM--------------')
+print('--------------SVM--------------')
+print('Tuned SVM parameters: {}'.format(svm_clf.best_params_))
 print('Mean accuracy of predictions: {:.2f}'.format(svm_clf.score(testing_features, testing_results)))
 print('f1 score of svm: {}'.format(f1_score(testing_results, svm_prediction, average=None)))
 
 # Decision Tree Model
-tree_clf = tree.DecisionTreeClassifier()
+tree_parameters = {'criterion': ['entropy', 'gini'], 'max_depth': [None, 3, 8, 12], 'min_samples_leaf': list(range(1,9))}
+tree_clf = RandomizedSearchCV(tree.DecisionTreeClassifier(), tree_parameters, cv=5, scoring='f1_weighted')
 tree_clf.fit(training_features, training_results)
+
 
 tree_prediction = tree_clf.predict(testing_features)
 
-print('--------PERFORMANCE OF DECISION TREES---------')
+print('--------DECISION TREES---------')
+print('Tuned decision tree parameters: {}'.format(tree_clf.best_params_))
 print('Mean accuracy of predictions: {:.2f}'.format(tree_clf.score(testing_features, testing_results)))
 print('f1 score of decision trees: {}'.format(f1_score(testing_results, tree_prediction, average=None)))
 
 # K-Nearest Model
-knear_clf = neighbors.KNeighborsClassifier(n_neighbors=3)
+knear_params = {'n_neighbors': [3,5,10, 15], 'weights': ['uniform', 'distance']}
+knear_clf = GridSearchCV(neighbors.KNeighborsClassifier(), knear_params, cv=5, scoring='f1_weighted')
 knear_clf.fit(training_features, training_results)
 
 knear_prediction = knear_clf.predict(testing_features)
 
-print('-----PERFORMANCE OF K-NEAREST NEIGHBOURS------')
+print('-----K-NEAREST NEIGHBOURS------')
+print('Tuned Nearest Neighbours parameters: {}'.format(knear_clf.best_params_))
 print('Mean accuracy of predictions: {:.2f}'.format(knear_clf.score(testing_features, testing_results)))
 print('f1 score of nearest neighbours: {}'.format(f1_score(testing_results, knear_prediction, average=None)))
 
@@ -179,7 +195,7 @@ bayes_clf.fit(training_features, training_results)
 
 bayes_prediction = bayes_clf.predict(testing_features)
 
-print('-------PERFORMANCE OF NAIVE BAYES--------')
+print('-------NAIVE BAYES--------')
 print('Mean accuracy of predictions: {:.2f}'.format(bayes_clf.score(testing_features, testing_results)))
 print('f1 score of naive bayes: {}'.format(f1_score(testing_results, bayes_prediction, average=None)))
 
