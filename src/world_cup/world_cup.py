@@ -4,8 +4,8 @@ import math
 import matplotlib.pyplot as plt
 
 from sklearn import linear_model, svm, tree, neighbors, naive_bayes
-from sklearn.metrics import mean_squared_error, r2_score
-from sklearn.preprocessing import Imputer, StandardScaler
+from sklearn.metrics import mean_squared_error, r2_score, f1_score, log_loss
+from sklearn.preprocessing import Imputer, StandardScaler, LabelEncoder
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline, FeatureUnion
 import category_encoders as cs
@@ -69,8 +69,12 @@ training_scores = goals.to_frame().iloc[:num_rows - training_threshold]
 testing_scores = goals.to_frame().iloc[num_rows - training_threshold:]
 
 # Results for classification task
-training_results = results.to_frame().iloc[:num_rows - training_threshold]
-testing_results = results.to_frame().iloc[num_rows - training_threshold:]
+le = LabelEncoder()
+le.fit(results)
+results = le.transform(results)
+
+training_results = results[:num_rows - training_threshold]
+testing_results = results[num_rows - training_threshold:]
 
 print('-------------------------------------------')
 print('--------------REGRESSION TASK--------------')
@@ -88,12 +92,12 @@ ridge_prediction_scores = ridge_regr.predict(testing_features)
 
 # Evaluate the models
 print('-----------PERFORMANCE OF ORDINARY REGRESSION----------')
-print('Mean Squared error: {:.2}'.format(mean_squared_error(testing_scores, ord_prediction_scores)))
-print('Variance score: {:.2}'.format(r2_score(testing_scores, ord_prediction_scores)))
+print('Root mean Squared error: {:.2}'.format(math.sqrt(mean_squared_error(testing_scores, ord_prediction_scores))))
+print('r^2 Variance score: {:.2}'.format(r2_score(testing_scores, ord_prediction_scores)))
 
 print('------------PERFORMANCE  OF RIDGE REGRESSION-----------')
-print('Mean Squared error: {:.2}'.format(mean_squared_error(testing_scores, ridge_prediction_scores)))
-print('Variance score: {:.2}'.format(r2_score(testing_scores, ridge_prediction_scores)))
+print('Root mean Squared error: {:.2}'.format(math.sqrt(mean_squared_error(testing_scores, ridge_prediction_scores))))
+print('r^2 Variance score: {:.2}'.format(r2_score(testing_scores, ridge_prediction_scores)))
 
 print('-------------------------------------------')
 print('------------CLASSIFICATION TASK------------')
@@ -111,6 +115,9 @@ perceptron_prediction_results = perceptron.predict(testing_features)
 # Evaluate the model
 print('-----------PERFORMANCE OF PERCEPTRON----------')
 print('Mean accuracy of predictions: {:.2f}'.format(perceptron.score(testing_features, testing_results)))
+print('f1 score of perceptron: {}'.format(f1_score(perceptron_prediction_results, testing_results, average=None)))
+
+print('log loss of perceptron: {}'.format(log_loss(perceptron_prediction_results, testing_results)))
 
 # SVM model
 svm_clf = svm.SVC(kernel='linear')
@@ -121,6 +128,8 @@ svm_prediction = svm_clf.predict(testing_features)
 # Evaluate the model
 print('--------------PERFORMANCE OF SVM--------------')
 print('Mean accuracy of predictions: {:.2f}'.format(svm_clf.score(testing_features, testing_results)))
+print('f1 score of svm: {}'.format(f1_score(svm_prediction, testing_results, average=None)))
+print('log loss of svm: {}'.format(log_loss(svm_prediction, testing_results)))
 
 # Decision Tree Model
 tree_clf = tree.DecisionTreeClassifier()
@@ -130,15 +139,19 @@ tree_prediction = tree_clf.predict(testing_features)
 
 print('--------PERFORMANCE OF DECISION TREES---------')
 print('Mean accuracy of predictions: {:.2f}'.format(tree_clf.score(testing_features, testing_results)))
+print('f1 score of decision trees: {}'.format(f1_score(tree_prediction, testing_results, average=None)))
+print('log loss of decision trees: {}'.format(log_loss(tree_prediction, testing_results)))
 
 # K-Nearest Model
 knear_clf = neighbors.KNeighborsClassifier(n_neighbors=3)
-knear_clf.fit(training_features, training_results.values.ravel())
+knear_clf.fit(training_features, training_results)
 
 knear_prediction = knear_clf.predict(testing_features)
 
 print('-----PERFORMANCE OF K-NEAREST NEIGHBOURS------')
 print('Mean accuracy of predictions: {:.2f}'.format(knear_clf.score(testing_features, testing_results)))
+print('f1 score of nearest neighbours: {}'.format(f1_score(knear_prediction, testing_results, average=None)))
+print('log loss of nearest neighbours: {}'.format(log_loss(knear_prediction, testing_results)))
 
 # Naive Bayes Model
 bayes_clf = naive_bayes.GaussianNB()
@@ -148,3 +161,5 @@ bayes_prediction = bayes_clf.predict(testing_features)
 
 print('-------PERFORMANCE OF NAIVE BAYES--------')
 print('Mean accuracy of predictions: {:.2f}'.format(bayes_clf.score(testing_features, testing_results)))
+print('f1 score of naive bayes: {}'.format(f1_score(bayes_prediction, testing_results, average=None)))
+print('log loss of naive bayes: {}'.format(log_loss(bayes_prediction, testing_results)))
