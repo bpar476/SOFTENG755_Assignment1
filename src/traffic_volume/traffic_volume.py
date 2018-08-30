@@ -48,12 +48,10 @@ ridge_prediction_targets = ridge_regr.predict(testing_features)
 
 # Evaluate the model
 print('------------ORDINARY REGRESSION RESULTS------------')
-print('Coefficients: ', ord_regr.coef_)
-print('Mean Squared error: {:.2}'.format(mean_squared_error(testing_targets, ord_prediction_targets)))
-print('Variance score: {:.2}'.format(r2_score(testing_targets, ord_prediction_targets)))
+print('Root mean Squared error: {:.2}'.format(math.sqrt(mean_squared_error(testing_targets, ord_prediction_targets))))
+print('r^2 Variance score: {:.2}'.format(r2_score(testing_targets, ord_prediction_targets)))
 
 
 print('-------------RIDGE  REGRESSION RESULTS------------')
-print('Coefficients: ', ridge_regr.coef_)
-print('Mean Squared error: {:.2}'.format(mean_squared_error(testing_targets, ridge_prediction_targets)))
-print('Variance score: {:.2}'.format(r2_score(testing_targets, ridge_prediction_targets)))
+print('Root mean Squared error: {:.2}'.format(math.sqrt(mean_squared_error(testing_targets, ridge_prediction_targets))))
+print('r^2 Variance score: {:.2}'.format(r2_score(testing_targets, ridge_prediction_targets)))
