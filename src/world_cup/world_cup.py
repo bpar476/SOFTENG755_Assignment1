@@ -190,6 +190,17 @@ if TEST_FILE_PATH is not None:
     features = test_data_df.loc[:, :'Normal_Time'].copy()
     processed_test_data = preprocess_features(features)
 
+    ord_prediction = ord_regr.predict(processed_test_data)
+    ridge_prediction = ridge_regr.predict(processed_test_data)
+
+    with open('ord_regression.txt', 'w') as ord_out:
+        for pred in ord_prediction:
+            ord_out.write('{}\n'.format(pred))
+
+    with open('ridge_regression.txt', 'w') as ridge_out:
+        for pred in ridge_prediction:
+            ridge_out.write('{}\n'.format(pred))
+
     perceptron_prediction = perceptron.predict(processed_test_data)
     svm_prediction = svm_clf.predict(processed_test_data)
     tree_prediction = tree_clf.predict(processed_test_data)
