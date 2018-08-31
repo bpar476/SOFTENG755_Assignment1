@@ -18,6 +18,10 @@ If you want to add your own validation data, supply the `--test-data` argument, 
 
 `python -W ignore world_cup.py --test-data <RELATIVE_PATH_TO_VALIDATION_CSV>`
 
+### Runtime
+
+Note that these scripts train the model every time you execute them. This involves hyperparameter cross validation testing so it can take some time. Just wait it out. For example, the occupancy script takes about 4 minutes.
+
 ## Note
 
 If you're running the world cup script and the Team1 or Team2 columns contain a different set of teams to that from the dataset originally given to us, you're going to need to run that script with the `-d` flag. This is because the trained model uses a OneHotEncoder of the dataset originally given to us which affects the dimensionality. The new data will be encoded with a OneHotEncoder also but if the set of values are different, the processed features will have different dimensionality to what is expected.
