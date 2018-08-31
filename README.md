@@ -20,7 +20,7 @@ If you want to add your own validation data, supply the `--test-data` argument, 
 
 ### Runtime
 
-Note that these scripts train the model every time you execute them. This involves hyperparameter cross validation testing so it can take some time. Just wait it out. For example, the occupancy script takes about 4 minutes.
+Note that these scripts train the model every time you execute them. This involves hyperparameter cross validation testing so it can take some time. Just wait it out. For example, the occupancy script takes about 4 minutes, Landsat takes about 9 minutes.
 
 ## Note
 
