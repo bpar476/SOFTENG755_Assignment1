@@ -66,6 +66,7 @@ print('r^2 Variance score: {:.2}'.format(r2_score(testing_targets, ord_predictio
 
 
 print('-------------RIDGE  REGRESSION RESULTS------------')
+print('Selected alpha value: {}'.format(ridge_regr.alpha_))
 print('Root mean Squared error: {:.2}'.format(math.sqrt(mean_squared_error(testing_targets, ridge_prediction_targets))))
 print('r^2 Variance score: {:.2}'.format(r2_score(testing_targets, ridge_prediction_targets)))
 

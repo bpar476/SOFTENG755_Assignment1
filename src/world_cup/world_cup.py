@@ -115,12 +115,14 @@ ridge_regr = linear_model.RidgeCV(alphas = [0.1, 1.0, 10.0, 100.0])
 ridge_regr.fit(training_features, training_scores)
 ridge_prediction_scores = ridge_regr.predict(testing_features)
 
+
 # Evaluate the models
 print('-----------PERFORMANCE OF ORDINARY REGRESSION----------')
 print('Root mean Squared error: {:.2}'.format(math.sqrt(mean_squared_error(testing_scores, ord_prediction_scores))))
 print('r^2 Variance score: {:.2}'.format(r2_score(testing_scores, ord_prediction_scores)))
 
 print('------------PERFORMANCE  OF RIDGE REGRESSION-----------')
+print('Selected alpha value: {}'.format(ridge_regr.alpha_))
 print('Root mean Squared error: {:.2}'.format(math.sqrt(mean_squared_error(testing_scores, ridge_prediction_scores))))
 print('r^2 Variance score: {:.2}'.format(r2_score(testing_scores, ridge_prediction_scores)))
 
