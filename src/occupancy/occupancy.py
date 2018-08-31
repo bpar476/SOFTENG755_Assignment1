@@ -9,6 +9,7 @@ from sklearn import linear_model, svm, tree, neighbors, naive_bayes
 from sklearn.preprocessing import Imputer, StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import f1_score, roc_auc_score
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 
 parser = argparse.ArgumentParser(description='Machine learning algorithm for 2018 world cup data.')
 parser.add_argument('-t', '--test-data', help='path to additional features to test against. Path must be relative to the current directory. If supplied, results of predictions against this test data will be the last thing printed by this script (optional)')
@@ -100,7 +101,8 @@ print('-------------------------------------------')
 
 print('F1 scores given in numeric order: 0 (unoccupied), 1 (occupied)')
 # Perceptron model
-perceptron = linear_model.Perceptron()
+perceptron_parameters = {'max_iter': [5, 10, 20], 'penalty': ['elasticnet', None], 'alpha': [1e-3, 1e-4, 1e-5]}
+perceptron = GridSearchCV(linear_model.Perceptron(), perceptron_parameters, cv=5, scoring='f1_weighted')
 
 # Train the model
 perceptron.fit(training_features, training_targets)
@@ -109,39 +111,48 @@ perceptron_prediction = perceptron.predict(processed_features)
 
 # Evaluate the model
 print('-----------PERFORMANCE OF PERCEPTRON----------')
+print('Tuned perceptron parameters: {}'.format(perceptron.best_params_))
 print('Mean accuracy of predictions: {:.2f}'.format(perceptron.score(processed_features, targets)))
 print('f1 score of perceptron: {}'.format(f1_score(targets, perceptron_prediction, average=None)))
 print('Area under ROC curve score: {}'.format(roc_auc_score(targets, perceptron.decision_function(processed_features))))
 
 # SVM model
-svm_clf = svm.SVC(kernel='linear')
+svm_parameters = [{'C': [1, 10, 100, 1000], 'gamma': [1e-3, 1e-4, 1e-5], 'kernel': ['rbf'], 'class_weight':['balanced', None]},
+    {'C': [1, 10, 100, 1000], 'kernel': ['linear'], 'class_weight': ['balanced', None]}]
+
+svm_clf = GridSearchCV(svm.SVC(), svm_parameters, cv=5, scoring='f1_weighted')
 svm_clf.fit(training_features, training_targets)
 
 svm_prediction = svm_clf.predict(processed_features)
 
 # Evaluate the model
 print('--------------PERFORMANCE OF SVM--------------')
+print('Tuned SVM parameters: {}'.format(svm_clf.best_params_))
 print('Mean accuracy of predictions: {:.2f}'.format(svm_clf.score(processed_features, targets)))
 print('f1 score of svm: {}'.format(f1_score(targets, svm_prediction, average=None)))
 print('Area under ROC curve score: {}'.format(roc_auc_score(targets, svm_clf.decision_function(processed_features))))
 
 # Decision Tree Model
-tree_clf = tree.DecisionTreeClassifier()
+tree_parameters = {'criterion': ['entropy', 'gini'], 'max_depth': [None, 3, 8, 12], 'min_samples_leaf': list(range(1,9))}
+tree_clf = RandomizedSearchCV(tree.DecisionTreeClassifier(), tree_parameters, cv=10, scoring='f1_weighted')
 tree_clf.fit(training_features, training_targets)
 
 tree_prediction = tree_clf.predict(processed_features)
 
 print('--------PERFORMANCE OF DECISION TREES---------')
+print('Tuned decision tree parameters: {}'.format(tree_clf.best_params_))
 print('Mean accuracy of predictions: {:.2f}'.format(tree_clf.score(processed_features, targets)))
 print('f1 score of decision trees: {}'.format(f1_score(targets, tree_prediction, average=None)))
 
 # K-Nearest Model
-knear_clf = neighbors.KNeighborsClassifier(n_neighbors=3)
+knear_params = {'n_neighbors': [3,5,10, 15], 'weights': ['uniform', 'distance']}
+knear_clf = GridSearchCV(neighbors.KNeighborsClassifier(), knear_params, cv=10, scoring='f1_weighted')
 knear_clf.fit(training_features, training_targets)
 
 knear_prediction = knear_clf.predict(processed_features)
 
 print('-----PERFORMANCE OF K-NEAREST NEIGHBOURS------')
+print('Tuned Nearest Neighbours parameters: {}'.format(knear_clf.best_params_))
 print('Mean accuracy of predictions: {:.2f}'.format(knear_clf.score(processed_features, targets)))
 print('f1 score of nearest neighbours: {}'.format(f1_score(targets, knear_prediction, average=None)))
 
